@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Peso\Services;
 
+use Arokettu\Clock\SystemClock;
 use DateInterval;
 use Http\Discovery\Psr17Factory;
 use Http\Discovery\Psr18Client;
@@ -11,6 +12,7 @@ use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\SuccessResponse;
 use Peso\Core\Services\ExchangeRateServiceInterface;
+use Psr\Clock\ClockInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -29,6 +31,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         private DateInterval $ttl = new DateInterval('PT1H'),
         private ClientInterface $httpClient = new Psr18Client(),
         private RequestFactoryInterface $requestFactory = new Psr17Factory(),
+        private ClockInterface $clock = new SystemClock(),
     ) {
     }
 
