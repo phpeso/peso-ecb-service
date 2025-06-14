@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace Peso\Services;
 
 use Arokettu\Clock\SystemClock;
+use Arokettu\Date\Calendar;
+use Arokettu\Date\Date;
 use DateInterval;
 use Http\Discovery\Psr17Factory;
 use Http\Discovery\Psr18Client;
+use Peso\Core\Exceptions\ConversionRateNotFoundException;
+use Peso\Core\Exceptions\RequestNotSupportedException;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
+use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\SuccessResponse;
 use Peso\Core\Services\ExchangeRateServiceInterface;
+use Peso\Core\Types\Decimal;
 use Psr\Clock\ClockInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -37,12 +43,98 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
 
     public function send(object $request): ErrorResponse|SuccessResponse
     {
-        // TODO: Implement send() method.
+        if ($request instanceof CurrentExchangeRateRequest) {
+            return self::performCurrentRequest($request);
+        }
+        if ($request instanceof HistoricalExchangeRateRequest) {
+            return self::performHistoricalRequest($request);
+        }
+        return new ErrorResponse(RequestNotSupportedException::fromRequest($request));
+    }
+
+    private function performCurrentRequest(CurrentExchangeRateRequest $request): ErrorResponse|SuccessResponse
+    {
+        if ($request->baseCurrency !== 'EUR') {
+            return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+        }
+
+        $ratesXml = $this->getXmlData(self::ENDPOINT_DAILY);
+        $rates = array_pop($ratesXml); // there is only one date
+
+        return isset($rates[$request->quoteCurrency]) ?
+            new SuccessResponse(new Decimal($rates[$request->quoteCurrency])) :
+            new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+    }
+
+    private function performHistoricalRequest(HistoricalExchangeRateRequest $request): ErrorResponse|SuccessResponse
+    {
+        if ($request->baseCurrency !== 'EUR') {
+            return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+        }
+        $today = Calendar::fromDateTime($this->clock->now());
+
+        $rates = null;
+        if ($today->sub($request->date) < 0) {
+            throw new RuntimeException('Date seems to be in future');
+        }
+        if ($today->sub($request->date) <= 90) {
+            $ratesXml = $this->getXmlData(self::ENDPOINT_90DAYS);
+            $rates = $this->findDayRates($request->date, $ratesXml);
+        }
+        if ($rates === null) { // not found or not in the last 90 days
+            $ratesXml = $this->getXmlData(self::ENDPOINT_HISTORY);
+            $rates = $this->findDayRates($request->date, $ratesXml);
+        }
+
+        return isset($rates[$request->quoteCurrency]) ?
+            new SuccessResponse(new Decimal($rates[$request->quoteCurrency])) :
+            new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+    }
+
+    private function findDayRates(Date $date, array $ratesXml): array|null
+    {
+        $date = $date->toString();
+
+        if (isset($ratesXml[$date])) { // easy mode
+            return $ratesXml[$date];
+        }
+
+        foreach ($ratesXml as $dateKey => $rates) {
+            if (strcmp($dateKey, $date) > 0) { // skip bigger values
+                continue;
+            }
+            return $rates;
+        }
+
+        return null;
+    }
+
+    private function getXmlData(string $url): array
+    {
+        $cacheKey = hash('sha1', __CLASS__ . '|' . $url);
+
+        $data = $this->cache->get($cacheKey);
+
+        if ($data !== null) {
+            return $data;
+        }
+
+        $request = $this->requestFactory->createRequest('GET', $url);
+        $response = $this->httpClient->sendRequest($request);
+
+        if ($response->getStatusCode() !== 200) {
+            throw new RuntimeException('Error retrieving data XML');
+        }
+
+        $data = EuropeanCentralBankService\XmlFile::parse((string)$response->getBody());
+
+        $this->cache->set($cacheKey, $data, $this->ttl) ?: throw new RuntimeException('Cache service error');
+
+        return $data;
     }
 
     public function supports(object $request): bool
     {
-        return $request instanceof CurrentExchangeRateRequest &&
-            ($request->baseCurrency === 'EUR' || $request->quoteCurrency === 'EUR');
+        return $request instanceof CurrentExchangeRateRequest && $request->baseCurrency === 'EUR';
     }
 }
