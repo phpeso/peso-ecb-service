@@ -135,7 +135,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         $response = $this->httpClient->sendRequest($request);
 
         if ($response->getStatusCode() !== 200) {
-            throw new HttpFailureException('Error retrieving data XML');
+            throw HttpFailureException::fromResponse($request, $response);
         }
 
         $data = EuropeanCentralBankService\XmlFile::parse((string)$response->getBody());
