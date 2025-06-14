@@ -8,15 +8,20 @@ use Arokettu\Clock\SystemClock;
 use Arokettu\Date\Calendar;
 use Arokettu\Date\Date;
 use DateInterval;
-use Http\Discovery\Psr17Factory;
-use Http\Discovery\Psr18Client;
+use Override;
 use Peso\Core\Exceptions\ConversionRateNotFoundException;
 use Peso\Core\Exceptions\RequestNotSupportedException;
+use Peso\Core\Exceptions\RuntimeException;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\SuccessResponse;
 use Peso\Core\Services\ExchangeRateServiceInterface;
+use Peso\Core\Services\SDK\Cache\NullCache;
+use Peso\Core\Services\SDK\Exceptions\CacheFailureException;
+use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
+use Peso\Core\Services\SDK\HTTP\DiscoveredHttpClient;
+use Peso\Core\Services\SDK\HTTP\DiscoveredRequestFactory;
 use Peso\Core\Types\Decimal;
 use Psr\Clock\ClockInterface;
 use Psr\Http\Client\ClientInterface;
@@ -33,14 +38,18 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
     private const ENDPOINT_HISTORY = 'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml';
 
     public function __construct(
-        private CacheInterface $cache = new EmptyCache(),
+        private CacheInterface $cache = new NullCache(),
         private DateInterval $ttl = new DateInterval('PT1H'),
-        private ClientInterface $httpClient = new Psr18Client(),
-        private RequestFactoryInterface $requestFactory = new Psr17Factory(),
+        private ClientInterface $httpClient = new DiscoveredHttpClient(),
+        private RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
         private ClockInterface $clock = new SystemClock(),
     ) {
     }
 
+    /**
+     * @inheritDoc
+     */
+    #[Override]
     public function send(object $request): ErrorResponse|SuccessResponse
     {
         if ($request instanceof CurrentExchangeRateRequest) {
@@ -75,7 +84,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
 
         $rates = null;
         if ($today->sub($request->date) < 0) {
-            throw new RuntimeException('Date seems to be in future');
+            throw new ConversionRateNotFoundException('Date seems to be in future');
         }
         if ($today->sub($request->date) <= 90) {
             $ratesXml = $this->getXmlData(self::ENDPOINT_90DAYS);
@@ -109,6 +118,9 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         return null;
     }
 
+    /**
+     * @throws RuntimeException
+     */
     private function getXmlData(string $url): array
     {
         $cacheKey = hash('sha1', __CLASS__ . '|' . $url);
@@ -123,12 +135,12 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         $response = $this->httpClient->sendRequest($request);
 
         if ($response->getStatusCode() !== 200) {
-            throw new RuntimeException('Error retrieving data XML');
+            throw new HttpFailureException('Error retrieving data XML');
         }
 
         $data = EuropeanCentralBankService\XmlFile::parse((string)$response->getBody());
 
-        $this->cache->set($cacheKey, $data, $this->ttl) ?: throw new RuntimeException('Cache service error');
+        $this->cache->set($cacheKey, $data, $this->ttl) ?: throw new CacheFailureException('Cache service error');
 
         return $data;
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Peso\Services\EuropeanCentralBankService\XmlFile;
 
-use Peso\Services\RuntimeException;
+use Error;
 use Sabre\Xml\Reader;
 use Sabre\Xml\XmlDeserializable;
 
@@ -18,7 +18,7 @@ final readonly class OuterCube implements XmlDeserializable
         ]);
 
         foreach ($data as $date) {
-            $key = $date['attributes']['time'] ?? throw new RuntimeException('Invalid data returned');
+            $key = $date['attributes']['time'] ?? throw new Error('Invalid data returned');
             $value = $date['value'];
 
             $dates[$key] = $value;
