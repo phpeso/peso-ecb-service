@@ -145,6 +145,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         return $data;
     }
 
+    #[Override]
     public function supports(object $request): bool
     {
         return ($request instanceof CurrentExchangeRateRequest || $request instanceof HistoricalExchangeRateRequest)
