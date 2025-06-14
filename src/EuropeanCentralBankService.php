@@ -147,6 +147,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
 
     public function supports(object $request): bool
     {
-        return $request instanceof CurrentExchangeRateRequest && $request->baseCurrency === 'EUR';
+        return ($request instanceof CurrentExchangeRateRequest || $request instanceof HistoricalExchangeRateRequest)
+            && $request->baseCurrency === 'EUR';
     }
 }
