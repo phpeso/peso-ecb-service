@@ -84,7 +84,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
 
         $rates = null;
         if ($today->sub($request->date) < 0) {
-            throw new ConversionRateNotFoundException('Date seems to be in future');
+            return new ErrorResponse(new ConversionRateNotFoundException('Date seems to be in future'));
         }
         if ($today->sub($request->date) <= 90) {
             $ratesXml = $this->getXmlData(self::ENDPOINT_90DAYS);
