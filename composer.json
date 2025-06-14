@@ -13,6 +13,7 @@
         }
     },
     "require": {
+        "php": "^8.2",
         "arokettu/system-clock": "^2.0",
         "peso/core": "^0.1",
         "php-http/discovery": "^1.20",
