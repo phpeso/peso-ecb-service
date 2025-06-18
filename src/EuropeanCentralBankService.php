@@ -39,7 +39,8 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
 
     public function __construct(
         private CacheInterface $cache = new NullCache(),
-        private DateInterval $ttl = new DateInterval('PT1H'),
+        private DateInterval $currentTtl = new DateInterval('PT1H'),
+        private DateInterval $historyTtl = new DateInterval('P60D'),
         private ClientInterface $httpClient = new DiscoveredHttpClient(),
         private RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
         private ClockInterface $clock = new SystemClock(),
@@ -67,7 +68,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
             return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
         }
 
-        $ratesXml = $this->getXmlData(self::ENDPOINT_DAILY);
+        $ratesXml = $this->getXmlData(self::ENDPOINT_DAILY, $this->currentTtl);
         $rates = array_pop($ratesXml); // there is only one date
 
         return isset($rates[$request->quoteCurrency]) ?
@@ -87,11 +88,11 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
             return new ErrorResponse(new ConversionRateNotFoundException('Date seems to be in future'));
         }
         if ($today->sub($request->date) <= 90) {
-            $ratesXml = $this->getXmlData(self::ENDPOINT_90DAYS);
+            $ratesXml = $this->getXmlData(self::ENDPOINT_90DAYS, $this->currentTtl);
             $rates = $this->findDayRates($request->date, $ratesXml);
         }
         if ($rates === null) { // not found or not in the last 90 days
-            $ratesXml = $this->getXmlData(self::ENDPOINT_HISTORY);
+            $ratesXml = $this->getXmlData(self::ENDPOINT_HISTORY, $this->historyTtl);
             $rates = $this->findDayRates($request->date, $ratesXml);
         }
 
@@ -121,7 +122,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
     /**
      * @throws RuntimeException
      */
-    private function getXmlData(string $url): array
+    private function getXmlData(string $url, DateInterval $ttl): array
     {
         $cacheKey = hash('sha1', __CLASS__ . '|' . $url);
 
@@ -140,7 +141,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
 
         $data = EuropeanCentralBankService\XmlFile::parse((string)$response->getBody());
 
-        $this->cache->set($cacheKey, $data, $this->ttl) ?: throw new CacheFailureException('Cache service error');
+        $this->cache->set($cacheKey, $data, $ttl) ?: throw new CacheFailureException('Cache service error');
 
         return $data;
     }
