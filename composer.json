@@ -15,7 +15,7 @@
     "require": {
         "php": "^8.2",
         "arokettu/system-clock": "^2.0",
-        "peso/core": "^0.1.4",
+        "peso/core": "^0.9",
         "psr/clock": "^1.0",
         "sabre/xml": "^4.0"
     },
