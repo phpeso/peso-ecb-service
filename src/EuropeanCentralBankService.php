@@ -17,6 +17,8 @@ use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\SuccessResponse;
 use Peso\Core\Services\ExchangeRateServiceInterface;
+use Peso\Core\Services\IndirectExchangeService;
+use Peso\Core\Services\ReversibleService;
 use Peso\Core\Services\SDK\Cache\NullCache;
 use Peso\Core\Services\SDK\Exceptions\CacheFailureException;
 use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
@@ -45,6 +47,31 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         private RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
         private ClockInterface $clock = new SystemClock(),
     ) {
+    }
+
+    public static function reversible(
+        CacheInterface $cache = new NullCache(),
+        DateInterval $currentTtl = new DateInterval('PT1H'),
+        DateInterval $historyTtl = new DateInterval('P60D'),
+        ClientInterface $httpClient = new DiscoveredHttpClient(),
+        RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
+        ClockInterface $clock = new SystemClock(),
+    ): ExchangeRateServiceInterface {
+        return new ReversibleService(new self($cache, $currentTtl, $historyTtl, $httpClient, $requestFactory, $clock));
+    }
+
+    public static function universal(
+        CacheInterface $cache = new NullCache(),
+        DateInterval $currentTtl = new DateInterval('PT1H'),
+        DateInterval $historyTtl = new DateInterval('P60D'),
+        ClientInterface $httpClient = new DiscoveredHttpClient(),
+        RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
+        ClockInterface $clock = new SystemClock(),
+    ): ExchangeRateServiceInterface {
+        return new IndirectExchangeService(
+            self::reversible($cache, $currentTtl, $historyTtl, $httpClient, $requestFactory, $clock),
+            'EUR'
+        );
     }
 
     /**

@@ -17,9 +17,14 @@
         "arokettu/system-clock": "^2.0",
         "peso/core": "^0.9",
         "psr/clock": "^1.0",
+        "psr/http-client": "^1.0",
+        "psr/http-client-implementation": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/simple-cache": "^1 || ^2 || ^3",
         "sabre/xml": "^4.0"
     },
     "require-dev": {
+        "arokettu/clock": "^2.7",
         "guzzlehttp/guzzle": "^7.9",
         "php-http/discovery": "^1.20",
         "phpunit/phpunit": "^12.2",
