@@ -7,3 +7,7 @@
 
 # debug
 /debug
+
+# tests
+/reports
+/.phpunit.result.cache

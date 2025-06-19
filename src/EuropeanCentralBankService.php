@@ -24,6 +24,7 @@ use Peso\Core\Services\SDK\Exceptions\CacheFailureException;
 use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
 use Peso\Core\Services\SDK\HTTP\DiscoveredHttpClient;
 use Peso\Core\Services\SDK\HTTP\DiscoveredRequestFactory;
+use Peso\Core\Services\SDK\HTTP\UserAgentHelper;
 use Peso\Core\Types\Decimal;
 use Psr\Clock\ClockInterface;
 use Psr\Http\Client\ClientInterface;
@@ -160,6 +161,11 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         }
 
         $request = $this->requestFactory->createRequest('GET', $url);
+        $request = $request->withHeader('User-Agent', UserAgentHelper::buildUserAgentString(
+            'ECB-Client',
+            'peso/ecb-service',
+            $request->hasHeader('User-Agent') ? $request->getHeaderLine('User-Agent') : null,
+        ));
         $response = $this->httpClient->sendRequest($request);
 
         if ($response->getStatusCode() !== 200) {
