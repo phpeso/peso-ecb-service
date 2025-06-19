@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Peso\Services\EuropeanCentralBankService\XmlFile;
 
 use Sabre\Xml\Element\KeyValue;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Peso\Services\EuropeanCentralBankService;
 
 use Sabre\Xml\Reader;
