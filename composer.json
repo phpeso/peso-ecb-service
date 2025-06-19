@@ -1,5 +1,21 @@
 {
     "name": "peso/ecb-service",
+    "type": "library",
+    "description": "European Central Bank data provider for Peso",
+    "keywords": ["currency", "exchange", "conversion", "phpeso", "ecb", "european central bank"],
+    "homepage": "https://phpeso.readthedocs.io/",
+    "license": "MIT",
+    "authors": [{
+        "name": "Anton Smirnov",
+        "role": "developer",
+        "homepage": "https://sandfox.me/",
+        "email": "sandfox+phpeso@sandfox.me"
+    }],
+    "support": {
+        "issues": "https://github.com/phpeso/ecb-service/issues",
+        "source": "https://github.com/phpeso/ecb-service",
+        "docs": "https://phpeso.readthedocs.io/"
+    },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
