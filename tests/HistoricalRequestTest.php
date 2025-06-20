@@ -29,14 +29,17 @@ class HistoricalRequestTest extends TestCase
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'USD', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('1.1185', $response->rate->value);
+        self::assertEquals('2025-05-15', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'MXN', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('21.636', $response->rate->value);
+        self::assertEquals('2025-05-15', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'JPY', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('163.3', $response->rate->value);
+        self::assertEquals('2025-05-15', $response->date->toString());
 
         self::assertCount(1, $http->getRequests()); // subsequent requests are cached
         self::assertEquals(MockClient::ENDPOINT_90DAYS, (string)$http->getLastRequest()->getUri());
@@ -80,14 +83,17 @@ class HistoricalRequestTest extends TestCase
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'USD', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('1.1301', $response->rate->value); // Friday rate
+        self::assertEquals('2025-05-23', $response->date->toString()); // Friday
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'MXN', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('21.854', $response->rate->value);
+        self::assertEquals('2025-05-23', $response->date->toString()); // Friday
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'JPY', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('161.13', $response->rate->value);
+        self::assertEquals('2025-05-23', $response->date->toString()); // Friday
 
         self::assertCount(1, $http->getRequests()); // subsequent requests are cached
         self::assertEquals(MockClient::ENDPOINT_90DAYS, (string)$http->getLastRequest()->getUri());
@@ -105,14 +111,17 @@ class HistoricalRequestTest extends TestCase
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'USD', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('1.03', $response->rate->value);
+        self::assertEquals('2025-01-15', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'MXN', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('21.09', $response->rate->value);
+        self::assertEquals('2025-01-15', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'JPY', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('161.75', $response->rate->value);
+        self::assertEquals('2025-01-15', $response->date->toString());
 
         self::assertCount(1, $http->getRequests()); // subsequent requests are cached
         self::assertEquals(MockClient::ENDPOINT_HISTORY, (string)$http->getLastRequest()->getUri());
@@ -156,14 +165,17 @@ class HistoricalRequestTest extends TestCase
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'USD', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('1.0298', $response->rate->value); // Friday rate
+        self::assertEquals('2025-01-17', $response->date->toString()); // Friday
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'MXN', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('21.4193', $response->rate->value);
+        self::assertEquals('2025-01-17', $response->date->toString()); // Friday
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'JPY', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('160.23', $response->rate->value);
+        self::assertEquals('2025-01-17', $response->date->toString()); // Friday
 
         self::assertCount(1, $http->getRequests()); // subsequent requests are cached
         self::assertEquals(MockClient::ENDPOINT_HISTORY, (string)$http->getLastRequest()->getUri());
@@ -181,14 +193,17 @@ class HistoricalRequestTest extends TestCase
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'USD', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('1.0447', $response->rate->value);
+        self::assertEquals('2025-02-18', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'MXN', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('21.1919', $response->rate->value);
+        self::assertEquals('2025-02-18', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'JPY', $date));
         self::assertInstanceOf(SuccessResponse::class, $response);
         self::assertEquals('158.55', $response->rate->value);
+        self::assertEquals('2025-02-18', $response->date->toString());
 
         self::assertCount(2, $http->getRequests()); // subsequent requests are cached, but we hit both history urls
     }

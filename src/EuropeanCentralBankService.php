@@ -97,10 +97,11 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         }
 
         $ratesXml = $this->getXmlData(self::ENDPOINT_DAILY, $this->currentTtl);
-        $rates = array_pop($ratesXml); // there is only one date
+        $date = array_key_first($ratesXml); // there is only one date
+        $rates = $ratesXml[$date];
 
         return isset($rates[$request->quoteCurrency]) ?
-            new SuccessResponse(new Decimal($rates[$request->quoteCurrency])) :
+            new SuccessResponse(new Decimal($rates[$request->quoteCurrency]), Calendar::parse($date)) :
             new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
     }
 
@@ -112,42 +113,48 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         $today = Calendar::fromDateTime($this->clock->now());
 
         $rates = null;
+        $date = null;
         if ($today->sub($request->date) < 0) {
             return new ErrorResponse(new ConversionRateNotFoundException('Date seems to be in future'));
         }
         if ($today->sub($request->date) <= 90) {
             $ratesXml = $this->getXmlData(self::ENDPOINT_90DAYS, $this->currentTtl);
-            $rates = $this->findDayRates($request->date, $ratesXml);
+            [$rates, $date] = $this->findDayRates($request->date, $ratesXml);
         }
         if ($rates === null) { // not found or not in the last 90 days
             $ratesXml = $this->getXmlData(self::ENDPOINT_HISTORY, $this->historyTtl);
-            $rates = $this->findDayRates($request->date, $ratesXml);
+            [$rates, $date] = $this->findDayRates($request->date, $ratesXml);
         }
 
         return isset($rates[$request->quoteCurrency]) ?
-            new SuccessResponse(new Decimal($rates[$request->quoteCurrency])) :
+            new SuccessResponse(new Decimal($rates[$request->quoteCurrency]), $date) :
             new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
     }
 
+    /**
+     * @param array<string, array<string, numeric-string>> $ratesXml
+     * @return array{0: array<string, numeric-string>, 1: Date}|null
+     */
     private function findDayRates(Date $date, array $ratesXml): array|null
     {
-        $date = $date->toString();
+        $dateStr = $date->toString();
 
-        if (isset($ratesXml[$date])) { // easy mode
-            return $ratesXml[$date];
+        if (isset($ratesXml[$dateStr])) { // easy mode
+            return [$ratesXml[$dateStr], $date];
         }
 
         foreach ($ratesXml as $dateKey => $rates) {
-            if (strcmp($dateKey, $date) > 0) { // skip bigger values
+            if (strcmp($dateKey, $dateStr) > 0) { // skip bigger values
                 continue;
             }
-            return $rates;
+            return [$rates, Calendar::parse($dateKey)];
         }
 
         return null;
     }
 
     /**
+     * @return array<string, array<string, numeric-string>>
      * @throws RuntimeException
      */
     private function getXmlData(string $url, DateInterval $ttl): array
