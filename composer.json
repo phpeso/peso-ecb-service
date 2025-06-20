@@ -35,6 +35,7 @@
     },
     "require": {
         "php": "^8.2",
+        "arokettu/date": "^2.4",
         "arokettu/system-clock": "^2.0",
         "peso/core": "^0.10",
         "psr/clock": "^1.0",
