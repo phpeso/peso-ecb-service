@@ -2,7 +2,7 @@
     "name": "peso/ecb-service",
     "type": "library",
     "description": "European Central Bank data provider for Peso",
-    "keywords": ["currency", "exchange", "conversion", "phpeso", "ecb", "european central bank"],
+    "keywords": ["currency", "exchange", "conversion", "phpeso", "peso", "ecb", "european central bank"],
     "homepage": "https://phpeso.readthedocs.io/",
     "license": "MIT",
     "authors": [{
