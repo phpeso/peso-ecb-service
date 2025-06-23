@@ -16,11 +16,15 @@
 
 ### 0.1.1
 
+(untagged; c8952b359759934289c5e7b8e107368586ff1a0b)
+
 *June 14, 2025*
 
 * Apply the upstream SDK
 
 ### 0.1.0 "Alpha 1"
+
+(untagged; 8f36a15c6335bdebe9732f5c711444824f35cfea)
 
 *June 14, 2025*
 
