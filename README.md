@@ -45,7 +45,7 @@ $converter = new CurrencyConverter($service);
 
 ## Documentation
 
-Read the full documentation here: <https://phpeso.org/v0.x/services/ecb.html>
+Read the full documentation here: <https://phpeso.org/v1.x/services/ecb.html>
 
 ## Support
 
