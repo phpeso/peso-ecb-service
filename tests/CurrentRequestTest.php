@@ -6,7 +6,7 @@ namespace Peso\Services\Tests;
 
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
-use Peso\Core\Responses\SuccessResponse;
+use Peso\Core\Responses\ExchangeRateResponse;
 use Peso\Services\EuropeanCentralBankService;
 use Peso\Services\Tests\Helpers\MockClient;
 use PHPUnit\Framework\TestCase;
@@ -23,17 +23,17 @@ class CurrentRequestTest extends TestCase
         $service = new EuropeanCentralBankService(cache: $cache, httpClient: $http);
 
         $response = $service->send(new CurrentExchangeRateRequest('EUR', 'USD'));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('1.1508', $response->rate->value);
         self::assertEquals('2025-06-18', $response->date->toString());
 
         $response = $service->send(new CurrentExchangeRateRequest('EUR', 'MXN'));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('21.8075', $response->rate->value);
         self::assertEquals('2025-06-18', $response->date->toString());
 
         $response = $service->send(new CurrentExchangeRateRequest('EUR', 'JPY'));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('166.67', $response->rate->value);
         self::assertEquals('2025-06-18', $response->date->toString());
 

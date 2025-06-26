@@ -15,7 +15,7 @@ use Peso\Core\Exceptions\RuntimeException;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
-use Peso\Core\Responses\SuccessResponse;
+use Peso\Core\Responses\ExchangeRateResponse;
 use Peso\Core\Services\ExchangeRateServiceInterface;
 use Peso\Core\Services\IndirectExchangeService;
 use Peso\Core\Services\ReversibleService;
@@ -79,7 +79,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
      * @inheritDoc
      */
     #[Override]
-    public function send(object $request): ErrorResponse|SuccessResponse
+    public function send(object $request): ErrorResponse|ExchangeRateResponse
     {
         if ($request instanceof CurrentExchangeRateRequest) {
             return self::performCurrentRequest($request);
@@ -90,7 +90,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         return new ErrorResponse(RequestNotSupportedException::fromRequest($request));
     }
 
-    private function performCurrentRequest(CurrentExchangeRateRequest $request): ErrorResponse|SuccessResponse
+    private function performCurrentRequest(CurrentExchangeRateRequest $request): ErrorResponse|ExchangeRateResponse
     {
         if ($request->baseCurrency !== 'EUR') {
             return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
@@ -101,11 +101,11 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         $rates = $ratesXml[$date];
 
         return isset($rates[$request->quoteCurrency]) ?
-            new SuccessResponse(new Decimal($rates[$request->quoteCurrency]), Calendar::parse($date)) :
+            new ExchangeRateResponse(new Decimal($rates[$request->quoteCurrency]), Calendar::parse($date)) :
             new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
     }
 
-    private function performHistoricalRequest(HistoricalExchangeRateRequest $request): ErrorResponse|SuccessResponse
+    private function performHistoricalRequest(HistoricalExchangeRateRequest $request): ErrorResponse|ExchangeRateResponse
     {
         if ($request->baseCurrency !== 'EUR') {
             return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
@@ -127,7 +127,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         }
 
         return isset($rates[$request->quoteCurrency]) ?
-            new SuccessResponse(new Decimal($rates[$request->quoteCurrency]), $date) :
+            new ExchangeRateResponse(new Decimal($rates[$request->quoteCurrency]), $date) :
             new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
     }
 
