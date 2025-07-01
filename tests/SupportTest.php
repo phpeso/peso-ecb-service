@@ -11,7 +11,7 @@ use Peso\Services\EuropeanCentralBankService;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
-class SupportTest extends TestCase
+final class SupportTest extends TestCase
 {
     public function testRequests(): void
     {

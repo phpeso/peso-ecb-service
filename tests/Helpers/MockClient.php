@@ -20,21 +20,21 @@ final readonly class MockClient
 
         $client->on(
             new RequestMatcher('/stats/eurofxref/eurofxref-daily.xml', 'www.ecb.europa.eu', ['GET'], ['https']),
-            function () {
+            static function () {
                 return new Response(body: fopen(__DIR__ . '/../data/eurofxref-daily.xml', 'r'));
-            }
+            },
         );
         $client->on(
             new RequestMatcher('/stats/eurofxref/eurofxref-hist-90d.xml', 'www.ecb.europa.eu', ['GET'], ['https']),
-            function () {
+            static function () {
                 return new Response(body: fopen(__DIR__ . '/../data/eurofxref-hist-90d.xml', 'r'));
-            }
+            },
         );
         $client->on(
             new RequestMatcher('/stats/eurofxref/eurofxref-hist.xml', 'www.ecb.europa.eu', ['GET'], ['https']),
-            function () {
+            static function () {
                 return new Response(body: fopen(__DIR__ . '/../data/eurofxref-hist.xml', 'r'));
-            }
+            },
         );
 
         return $client;

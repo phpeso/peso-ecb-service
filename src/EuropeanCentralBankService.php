@@ -9,15 +9,15 @@ use Arokettu\Date\Calendar;
 use Arokettu\Date\Date;
 use DateInterval;
 use Override;
-use Peso\Core\Exceptions\ConversionRateNotFoundException;
+use Peso\Core\Exceptions\ExchangeRateNotFoundException;
 use Peso\Core\Exceptions\RequestNotSupportedException;
 use Peso\Core\Exceptions\RuntimeException;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\ExchangeRateResponse;
-use Peso\Core\Services\ExchangeRateServiceInterface;
 use Peso\Core\Services\IndirectExchangeService;
+use Peso\Core\Services\PesoServiceInterface;
 use Peso\Core\Services\ReversibleService;
 use Peso\Core\Services\SDK\Cache\NullCache;
 use Peso\Core\Services\SDK\Exceptions\CacheFailureException;
@@ -31,7 +31,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\SimpleCache\CacheInterface;
 
-final readonly class EuropeanCentralBankService implements ExchangeRateServiceInterface
+final readonly class EuropeanCentralBankService implements PesoServiceInterface
 {
     /**
      * @see https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html
@@ -57,7 +57,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         ClientInterface $httpClient = new DiscoveredHttpClient(),
         RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
         ClockInterface $clock = new SystemClock(),
-    ): ExchangeRateServiceInterface {
+    ): PesoServiceInterface {
         return new ReversibleService(new self($cache, $currentTtl, $historyTtl, $httpClient, $requestFactory, $clock));
     }
 
@@ -68,10 +68,10 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
         ClientInterface $httpClient = new DiscoveredHttpClient(),
         RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
         ClockInterface $clock = new SystemClock(),
-    ): ExchangeRateServiceInterface {
+    ): PesoServiceInterface {
         return new IndirectExchangeService(
             self::reversible($cache, $currentTtl, $historyTtl, $httpClient, $requestFactory, $clock),
-            'EUR'
+            'EUR',
         );
     }
 
@@ -93,7 +93,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
     private function performCurrentRequest(CurrentExchangeRateRequest $request): ErrorResponse|ExchangeRateResponse
     {
         if ($request->baseCurrency !== 'EUR') {
-            return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+            return new ErrorResponse(ExchangeRateNotFoundException::fromRequest($request));
         }
 
         $ratesXml = $this->getXmlData(self::ENDPOINT_DAILY, $this->currentTtl);
@@ -102,20 +102,21 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
 
         return isset($rates[$request->quoteCurrency]) ?
             new ExchangeRateResponse(new Decimal($rates[$request->quoteCurrency]), Calendar::parse($date)) :
-            new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+            new ErrorResponse(ExchangeRateNotFoundException::fromRequest($request));
     }
 
-    private function performHistoricalRequest(HistoricalExchangeRateRequest $request): ErrorResponse|ExchangeRateResponse
-    {
+    private function performHistoricalRequest(
+        HistoricalExchangeRateRequest $request,
+    ): ErrorResponse|ExchangeRateResponse {
         if ($request->baseCurrency !== 'EUR') {
-            return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+            return new ErrorResponse(ExchangeRateNotFoundException::fromRequest($request));
         }
         $today = Calendar::fromDateTime($this->clock->now());
 
         $rates = null;
         $date = null;
         if ($today->sub($request->date) < 0) {
-            return new ErrorResponse(new ConversionRateNotFoundException('Date seems to be in future'));
+            return new ErrorResponse(new ExchangeRateNotFoundException('Date seems to be in future'));
         }
         if ($today->sub($request->date) <= 90) {
             $ratesXml = $this->getXmlData(self::ENDPOINT_90DAYS, $this->currentTtl);
@@ -128,7 +129,7 @@ final readonly class EuropeanCentralBankService implements ExchangeRateServiceIn
 
         return isset($rates[$request->quoteCurrency]) ?
             new ExchangeRateResponse(new Decimal($rates[$request->quoteCurrency]), $date) :
-            new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+            new ErrorResponse(ExchangeRateNotFoundException::fromRequest($request));
     }
 
     /**

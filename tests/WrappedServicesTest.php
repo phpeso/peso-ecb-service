@@ -12,7 +12,7 @@ use Peso\Services\EuropeanCentralBankService;
 use Peso\Services\Tests\Helpers\MockClient;
 use PHPUnit\Framework\TestCase;
 
-class WrappedServicesTest extends TestCase
+final class WrappedServicesTest extends TestCase
 {
     public function testReversible(): void
     {

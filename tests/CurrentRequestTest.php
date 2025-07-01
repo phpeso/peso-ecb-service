@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 
-class CurrentRequestTest extends TestCase
+final class CurrentRequestTest extends TestCase
 {
     public function testRate(): void
     {

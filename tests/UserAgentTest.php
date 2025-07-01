@@ -15,7 +15,7 @@ use Psr\Http\Message\RequestInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 
-class UserAgentTest extends TestCase
+final class UserAgentTest extends TestCase
 {
     public function testUserAgent(): void
     {
@@ -51,7 +51,7 @@ class UserAgentTest extends TestCase
             {
                 return $this->factory->createRequest($method, $uri)->withHeader(
                     'user-agent',
-                    'CustomSuffix/1.0'
+                    'CustomSuffix/1.0',
                 );
             }
         };
@@ -67,7 +67,7 @@ class UserAgentTest extends TestCase
 
         self::assertEquals(
             "Peso/$pesoVersion ECB-Client/$clientVersion CustomSuffix/1.0",
-            $request->getHeaderLine('User-Agent')
+            $request->getHeaderLine('User-Agent'),
         );
     }
 }

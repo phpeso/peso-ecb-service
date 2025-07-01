@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 
-class HistoricalRequestTest extends TestCase
+final class HistoricalRequestTest extends TestCase
 {
     public function testRateWhithin90Days(): void
     {
@@ -59,7 +59,7 @@ class HistoricalRequestTest extends TestCase
         self::assertInstanceOf(ErrorResponse::class, $response);
         self::assertEquals(
             'Unable to find exchange rate for EUR/KZT on 2025-05-15',
-            $response->exception->getMessage()
+            $response->exception->getMessage(),
         );
 
         // reverse rate
@@ -67,7 +67,7 @@ class HistoricalRequestTest extends TestCase
         self::assertInstanceOf(ErrorResponse::class, $response);
         self::assertEquals(
             'Unable to find exchange rate for USD/EUR on 2025-05-15',
-            $response->exception->getMessage()
+            $response->exception->getMessage(),
         );
     }
 
@@ -141,7 +141,7 @@ class HistoricalRequestTest extends TestCase
         self::assertInstanceOf(ErrorResponse::class, $response);
         self::assertEquals(
             'Unable to find exchange rate for EUR/KZT on 2025-01-15',
-            $response->exception->getMessage()
+            $response->exception->getMessage(),
         );
 
         // reverse rate
@@ -149,7 +149,7 @@ class HistoricalRequestTest extends TestCase
         self::assertInstanceOf(ErrorResponse::class, $response);
         self::assertEquals(
             'Unable to find exchange rate for USD/EUR on 2025-01-15',
-            $response->exception->getMessage()
+            $response->exception->getMessage(),
         );
     }
 
