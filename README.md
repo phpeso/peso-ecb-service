@@ -3,12 +3,18 @@
 [![Packagist]][Packagist Link]
 [![PHP]][Packagist Link]
 [![License]][License Link]
+[![GitHub Actions]][GitHub Actions Link]
+[![Codecov]][Codecov Link]
 
 [Packagist]: https://img.shields.io/packagist/v/peso/ecb-service.svg?style=flat-square
 [PHP]: https://img.shields.io/packagist/php-v/peso/ecb-service.svg?style=flat-square
 [License]: https://img.shields.io/packagist/l/peso/ecb-service.svg?style=flat-square
+[GitHub Actions]: https://img.shields.io/github/actions/workflow/status/phpeso/ecb-service/ci.yml?style=flat-square
+[Codecov]: https://img.shields.io/codecov/c/gh/phpeso/ecb-service?style=flat-square
 
 [Packagist Link]: https://packagist.org/packages/peso/ecb-service
+[GitHub Actions Link]: https://github.com/phpeso/ecb-service/actions
+[Codecov Link]: https://codecov.io/gh/phpeso/ecb-service
 [License Link]: LICENSE.md
 
 This is an exchange data provider for Peso that retrieves data from
