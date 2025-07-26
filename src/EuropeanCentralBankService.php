@@ -160,7 +160,7 @@ final readonly class EuropeanCentralBankService implements PesoServiceInterface
      */
     private function getXmlData(string $url, DateInterval $ttl): array
     {
-        $cacheKey = hash('sha1', __CLASS__ . '|' . $url);
+        $cacheKey = 'peso|ecb|' . hash('sha1', $url);
 
         $data = $this->cache->get($cacheKey);
 
